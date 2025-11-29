@@ -66,12 +66,12 @@ export default function Home() {
           <Leaf className="h-8 w-8 text-primary" />
           <span className="text-xl font-semibold text-foreground">Zero-to-Hero</span>
         </div>
-        <Link href="/admin/login">
+        <a href="/admin/login">
           <Button variant="outline" className="gap-2" data-testid="button-admin-login">
             <Shield className="h-4 w-4" />
             Admin
           </Button>
-        </Link>
+        </a>
       </header>
 
       <div className="container mx-auto px-4 py-16">

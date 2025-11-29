@@ -95,21 +95,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 const isActive = location === item.href;
                 return (
                   <li key={item.href}>
-                    <Link href={item.href}>
-                      <a
-                        onClick={() => setSidebarOpen(false)}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                          isActive 
-                            ? "bg-primary text-primary-foreground" 
-                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        )}
-                        data-testid={`link-nav-${item.label.toLowerCase()}`}
-                      >
-                        <item.icon className="h-5 w-5" />
-                        {item.label}
-                      </a>
-                    </Link>
+                    <a
+                      href={item.href}
+                      onClick={() => {
+                        setSidebarOpen(false);
+                        setLocation(item.href);
+                      }}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+                        isActive 
+                          ? "bg-primary text-primary-foreground" 
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                      data-testid={`link-nav-${item.label.toLowerCase()}`}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {item.label}
+                    </a>
                   </li>
                 );
               })}
