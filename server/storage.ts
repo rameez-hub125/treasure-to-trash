@@ -1,11 +1,12 @@
 import { 
-  users, reports, rewards, transactions, notifications, admins,
+  users, reports, rewards, transactions, notifications, admins, bins,
   type User, type InsertUser, 
   type Report, type InsertReport,
   type Reward, type InsertReward,
   type Transaction, type InsertTransaction,
   type Notification, type InsertNotification,
   type Admin, type InsertAdmin,
+  type Bin, type InsertBin,
   type DashboardStats
 } from "@shared/schema";
 import { db } from "./db";
@@ -44,6 +45,13 @@ export interface IStorage {
   // Admin
   getAdminByEmail(email: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
+
+  // Bins
+  getBin(id: number): Promise<Bin | undefined>;
+  getAllBins(): Promise<Bin[]>;
+  createBin(bin: InsertBin): Promise<Bin>;
+  updateBin(id: number, data: Partial<Bin>): Promise<Bin | undefined>;
+  deleteBin(id: number): Promise<boolean>;
   
   // Stats
   getDashboardStats(): Promise<DashboardStats>;
@@ -158,6 +166,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Dashboard Stats
+  // Bins
+  async getBin(id: number): Promise<Bin | undefined> {
+    const [bin] = await db.select().from(bins).where(eq(bins.id, id));
+    return bin || undefined;
+  }
+
+  async getAllBins(): Promise<Bin[]> {
+    return db.select().from(bins).orderBy(desc(bins.createdAt));
+  }
+
+  async createBin(insertBin: InsertBin): Promise<Bin> {
+    const [bin] = await db.insert(bins).values(insertBin).returning();
+    return bin;
+  }
+
+  async updateBin(id: number, data: Partial<Bin>): Promise<Bin | undefined> {
+    const [bin] = await db.update(bins).set(data).where(eq(bins.id, id)).returning();
+    return bin || undefined;
+  }
+
+  async deleteBin(id: number): Promise<boolean> {
+    const result = await db.delete(bins).where(eq(bins.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
   async getDashboardStats(): Promise<DashboardStats> {
     const [userCount] = await db.select({ count: sql<number>`count(*)` }).from(users);
     const [reportCount] = await db.select({ count: sql<number>`count(*)` }).from(reports);

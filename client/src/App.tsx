@@ -10,6 +10,7 @@ import UserLogin from "@/pages/user-login";
 import UserDashboard from "@/pages/user/dashboard";
 import ReportWaste from "@/pages/user/report";
 import MyReports from "@/pages/user/reports";
+import NearbyBins from "@/pages/user/nearby-bins";
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminUsers from "@/pages/admin/users";
@@ -17,6 +18,7 @@ import AdminReports from "@/pages/admin/reports";
 import AdminRewards from "@/pages/admin/rewards";
 import AdminTransactions from "@/pages/admin/transactions";
 import AdminNotifications from "@/pages/admin/notifications";
+import AdminBins from "@/pages/admin/bins";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +29,7 @@ function Router() {
       <Route path="/user/dashboard" component={UserDashboard} />
       <Route path="/user/report" component={ReportWaste} />
       <Route path="/user/reports" component={MyReports} />
+      <Route path="/user/nearby-bins" component={NearbyBins} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin/users" component={AdminUsers} />
@@ -34,6 +37,7 @@ function Router() {
       <Route path="/admin/rewards" component={AdminRewards} />
       <Route path="/admin/transactions" component={AdminTransactions} />
       <Route path="/admin/notifications" component={AdminNotifications} />
+      <Route path="/admin/bins" component={AdminBins} />
       <Route component={NotFound} />
     </Switch>
   );

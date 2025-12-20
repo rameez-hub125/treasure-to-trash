@@ -77,6 +77,17 @@ export const admins = pgTable("admins", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Bins table
+export const bins = pgTable("bins", {
+  id: serial("id").primaryKey(),
+  location: text("location").notNull(),
+  latitude: text("latitude").notNull(),
+  longitude: text("longitude").notNull(),
+  capacity: varchar("capacity", { length: 255 }).notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("active"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertReportSchema = createInsertSchema(reports).omit({ id: true, createdAt: true });
@@ -84,6 +95,7 @@ export const insertRewardSchema = createInsertSchema(rewards).omit({ id: true, c
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, date: true });
 export const insertAdminSchema = createInsertSchema(admins).omit({ id: true, createdAt: true });
+export const insertBinSchema = createInsertSchema(bins).omit({ id: true, createdAt: true });
 
 // Admin login schema
 export const adminLoginSchema = z.object({
@@ -121,6 +133,9 @@ export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Admin = typeof admins.$inferSelect;
 export type InsertAdmin = z.infer<typeof insertAdminSchema>;
 export type AdminLogin = z.infer<typeof adminLoginSchema>;
+
+export type Bin = typeof bins.$inferSelect;
+export type InsertBin = z.infer<typeof insertBinSchema>;
 
 // Dashboard stats type
 export type DashboardStats = {

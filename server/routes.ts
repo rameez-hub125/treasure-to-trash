@@ -108,6 +108,83 @@ export async function registerRoutes(
     }
   });
 
+  // Bins management
+  app.get("/api/bins", async (_req, res) => {
+    try {
+      const bins = await storage.getAllBins();
+      res.json(bins);
+    } catch (error) {
+      console.error("Error fetching bins:", error);
+      res.status(500).json({ error: "Failed to fetch bins" });
+    }
+  });
+
+  app.get("/api/admin/bins", async (_req, res) => {
+    try {
+      const bins = await storage.getAllBins();
+      res.json(bins);
+    } catch (error) {
+      console.error("Error fetching bins:", error);
+      res.status(500).json({ error: "Failed to fetch bins" });
+    }
+  });
+
+  app.post("/api/admin/bins", async (req, res) => {
+    try {
+      const { location, latitude, longitude, capacity, status } = req.body;
+
+      if (!location || !latitude || !longitude || !capacity) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const bin = await storage.createBin({
+        location,
+        latitude,
+        longitude,
+        capacity,
+        status: status || "active",
+      });
+
+      res.status(201).json(bin);
+    } catch (error) {
+      console.error("Error creating bin:", error);
+      res.status(500).json({ error: "Failed to create bin" });
+    }
+  });
+
+  app.patch("/api/admin/bins/:id", async (req, res) => {
+    try {
+      const binId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      const bin = await storage.updateBin(binId, updateData);
+      if (!bin) {
+        return res.status(404).json({ error: "Bin not found" });
+      }
+
+      res.json(bin);
+    } catch (error) {
+      console.error("Error updating bin:", error);
+      res.status(500).json({ error: "Failed to update bin" });
+    }
+  });
+
+  app.delete("/api/admin/bins/:id", async (req, res) => {
+    try {
+      const binId = parseInt(req.params.id);
+      const deleted = await storage.deleteBin(binId);
+
+      if (!deleted) {
+        return res.status(404).json({ error: "Bin not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting bin:", error);
+      res.status(500).json({ error: "Failed to delete bin" });
+    }
+  });
+
   // Public stats endpoint
   app.get("/api/stats", async (_req, res) => {
     try {

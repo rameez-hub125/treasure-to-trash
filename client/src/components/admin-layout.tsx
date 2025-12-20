@@ -10,7 +10,8 @@ import {
   Bell, 
   LogOut,
   Menu,
-  X
+  X,
+  MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/admin/rewards", label: "Rewards", icon: Gift },
   { href: "/admin/transactions", label: "Transactions", icon: ArrowLeftRight },
   { href: "/admin/notifications", label: "Notifications", icon: Bell },
+  { href: "/admin/bins", label: "Bin Locations", icon: MapPin },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {

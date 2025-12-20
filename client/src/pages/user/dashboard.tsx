@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { Leaf, LogOut, Plus, List, Gift, TrendingUp, Coins } from "lucide-react";
+import { Leaf, LogOut, Plus, List, Gift, TrendingUp, Coins, MapPin } from "lucide-react";
 import type { Report, Transaction, Reward } from "@shared/schema";
 
 export default function UserDashboard() {
@@ -149,6 +149,15 @@ export default function UserDashboard() {
               >
                 <Gift className="h-4 w-4" />
                 View Rewards
+              </Button>
+              <Button
+                className="w-full gap-2"
+                variant="outline"
+                onClick={() => setLocation("/user/nearby-bins")}
+                data-testid="button-view-bins"
+              >
+                <MapPin className="h-4 w-4" />
+                Find Nearby Bins
               </Button>
             </CardContent>
           </Card>
