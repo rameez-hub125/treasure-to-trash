@@ -93,7 +93,10 @@ export const adminLoginSchema = z.object({
 
 // User registration/login schema
 export const userLoginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Invalid email address").refine(
+    (email) => email.endsWith("@gmail.com"),
+    { message: "Please use a valid Gmail address" }
+  ),
   name: z.string().min(2, "Name must be at least 2 characters"),
 });
 

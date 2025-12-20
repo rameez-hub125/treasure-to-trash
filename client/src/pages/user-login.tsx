@@ -68,17 +68,18 @@ export default function UserLogin() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Gmail Address</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="your@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 data-testid="input-email"
                 disabled={isLoading}
               />
+              <p className="text-xs text-muted-foreground">Please use your Gmail account</p>
             </div>
             <Button
               type="submit"
