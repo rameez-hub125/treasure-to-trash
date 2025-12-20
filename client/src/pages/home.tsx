@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react";
-import { Link } from "wouter";
 import { ArrowRight, Leaf, Recycle, Users, Coins, MapPin, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -42,8 +40,6 @@ function FeatureCard({ icon: Icon, title, description }: { icon: React.ElementTy
 }
 
 export default function Home() {
-  const [loggedIn, setLoggedIn] = useState(false);
-
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ["/api/stats"],
   });
@@ -53,10 +49,6 @@ export default function Home() {
     reportsSubmitted: stats?.totalReports ?? 0,
     tokensEarned: stats?.tokensDistributed ?? 0,
     co2Offset: stats?.co2Offset ?? 0,
-  };
-
-  const login = () => {
-    setLoggedIn(true);
   };
 
   return (
@@ -83,9 +75,8 @@ export default function Home() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
             Join our community in making waste management more efficient and rewarding!
           </p>
-          {!loggedIn ? (
+          <a href="/user/login">
             <Button 
-              onClick={login} 
               size="lg"
               className="text-lg py-6 px-10 rounded-full font-medium transition-all duration-300 ease-in-out transform hover:scale-105"
               data-testid="button-get-started"
@@ -93,16 +84,7 @@ export default function Home() {
               Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-          ) : (
-            <Button 
-              size="lg"
-              className="text-lg py-6 px-10 rounded-full font-medium transition-all duration-300 ease-in-out transform hover:scale-105"
-              data-testid="button-report-waste"
-            >
-              Report Waste
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          )}
+          </a>
         </section>
 
         <section className="grid md:grid-cols-3 gap-10 mb-20">

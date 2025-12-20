@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import bcrypt from "bcryptjs";
-import { adminLoginSchema } from "@shared/schema";
+import { adminLoginSchema, userLoginSchema, insertReportSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(
@@ -26,6 +26,87 @@ export async function registerRoutes(
   
   // Initialize admin on startup
   seedAdmin().catch(console.error);
+
+  // User login/register
+  app.post("/api/users/login", async (req, res) => {
+    try {
+      const { email, name } = userLoginSchema.parse(req.body);
+      
+      let user = await storage.getUserByEmail(email);
+      if (!user) {
+        user = await storage.createUser({ email, name });
+      }
+      
+      res.json({ user });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid input", details: error.errors });
+      }
+      console.error("User login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // User reports
+  app.post("/api/users/reports", async (req, res) => {
+    try {
+      const { userId, location, wasteType, amount } = req.body;
+      
+      if (!userId || !location || !wasteType || !amount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const report = await storage.createReport({
+        userId: parseInt(userId),
+        location,
+        wasteType,
+        amount: amount.toString(),
+        status: "pending",
+      });
+
+      res.status(201).json(report);
+    } catch (error) {
+      console.error("Error creating report:", error);
+      res.status(500).json({ error: "Failed to create report" });
+    }
+  });
+
+  app.get("/api/users/:userId/reports", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const allReports = await storage.getAllReports();
+      const userReports = allReports.filter(r => r.userId === userId);
+      res.json(userReports);
+    } catch (error) {
+      console.error("Error fetching user reports:", error);
+      res.status(500).json({ error: "Failed to fetch reports" });
+    }
+  });
+
+  // User transactions
+  app.get("/api/users/:userId/transactions", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const allTransactions = await storage.getAllTransactions();
+      const userTransactions = allTransactions.filter(t => t.userId === userId);
+      res.json(userTransactions);
+    } catch (error) {
+      console.error("Error fetching user transactions:", error);
+      res.status(500).json({ error: "Failed to fetch transactions" });
+    }
+  });
+
+  // User rewards
+  app.get("/api/users/:userId/rewards", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const reward = await storage.getUserReward(userId);
+      res.json(reward);
+    } catch (error) {
+      console.error("Error fetching user rewards:", error);
+      res.status(500).json({ error: "Failed to fetch rewards" });
+    }
+  });
 
   // Public stats endpoint
   app.get("/api/stats", async (_req, res) => {
