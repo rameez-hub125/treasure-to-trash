@@ -56,7 +56,7 @@ export default function Home() {
       <header className="flex items-center justify-between px-6 py-4 border-b border-border">
         <div className="flex items-center gap-2">
           <Leaf className="h-8 w-8 text-primary" />
-          <span className="text-xl font-semibold text-foreground">Zero-to-Hero</span>
+          <span className="text-xl font-semibold text-foreground">Trash-to-Treasure</span>
         </div>
         <a href="/admin/login">
           <Button variant="outline" className="gap-2" data-testid="button-admin-login">
@@ -70,7 +70,7 @@ export default function Home() {
         <section className="text-center mb-20">
           <AnimatedGlobe />
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground tracking-tight">
-            Zero-to-Hero <span className="text-primary">Waste Management</span>
+            Trash-to-Treasure <span className="text-primary">Waste Management</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
             Join our community in making waste management more efficient and rewarding!

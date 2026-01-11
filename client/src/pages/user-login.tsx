@@ -25,7 +25,7 @@ export default function UserLogin() {
       if (success) {
         toast({
           title: "Success",
-          description: "Welcome to Zero-to-Hero!",
+          description: "Trash-to-Treasure!",
         });
         setLocation("/user/dashboard");
       } else {
@@ -47,7 +47,7 @@ export default function UserLogin() {
           <div className="flex justify-center mb-4">
             <Leaf className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Join Zero-to-Hero</CardTitle>
+          <CardTitle className="text-2xl">Join Trash-to-Treasure</CardTitle>
           <CardDescription>
             Report waste and earn rewards
           </CardDescription>

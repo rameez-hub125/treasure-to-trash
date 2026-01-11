@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import { adminLoginSchema, userLoginSchema, insertReportSchema } from "@shared/schema";
+import { calculateRewardPoints, calculateLevel, type WasteType } from "./rewards-calculator";
 import { z } from "zod";
 
 export async function registerRoutes(
@@ -330,33 +331,53 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Report not found" });
       }
 
-      // If verified, award tokens to the user
+      // If verified, calculate and award reward points to the user
       if (status === "verified") {
         const user = await storage.getUser(report.userId);
         if (user) {
+          // Parse waste amount
           const match = report.amount.match(/(\d+(\.\d+)?)/);
           const wasteAmount = match ? parseFloat(match[0]) : 10;
-          const tokenReward = Math.round(wasteAmount * 10);
+          
+          // Get user's submission count for frequency bonus
+          const allReports = await storage.getAllReports();
+          const userSubmissionCount = allReports.filter(r => r.userId === report.userId && r.status === "verified").length;
 
+          // Calculate reward points
+          const calculation = calculateRewardPoints({
+            wasteType: (report.wasteType.toLowerCase() as WasteType) || "other",
+            amount: wasteAmount,
+            isFrequentUser: userSubmissionCount > 0,
+            submissionCount: userSubmissionCount,
+          });
+
+          // Get or create user's reward
           let reward = await storage.getUserReward(report.userId);
+          const newPoints = (reward?.points ?? 0) + calculation.totalPoints;
+          const newLevel = calculateLevel(newPoints);
+
           if (reward) {
-            await storage.updateReward(reward.id, { points: reward.points + tokenReward });
+            await storage.updateReward(reward.id, { 
+              points: newPoints,
+              level: newLevel,
+            });
           } else {
             await storage.createReward({
               userId: report.userId,
-              points: tokenReward,
-              level: 1,
+              points: calculation.totalPoints,
+              level: newLevel,
               isAvailable: true,
               name: `${user.name}'s Reward`,
               collectionInfo: "User reward balance",
             });
           }
 
+          // Create transaction with detailed breakdown
           await storage.createTransaction({
             userId: report.userId,
             type: "earned",
-            amount: tokenReward,
-            description: `Reward for verified waste report`,
+            amount: calculation.totalPoints,
+            description: `Waste report verified: ${calculation.basePoints} base + ${calculation.quantityBonusPoints} quantity + ${calculation.frequencyBonusPoints} frequency = ${calculation.totalPoints} points`,
           });
         }
       }
@@ -556,6 +577,129 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error creating notification:", error);
       res.status(500).json({ error: "Failed to create notification" });
+    }
+  });
+
+  // Redemption Requests
+  app.post("/api/users/:userId/redemption-requests", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { points, bankName, accountNumber, accountHolder, reason } = req.body;
+
+      if (!userId || !points || !bankName || !accountNumber || !accountHolder) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const reward = await storage.getUserReward(userId);
+      if (!reward || reward.points < points) {
+        return res.status(400).json({ error: "Insufficient points to redeem" });
+      }
+
+      const request = await storage.createRedemptionRequest({
+        userId,
+        points,
+        bankName,
+        accountNumber,
+        accountHolder,
+        reason,
+        status: "pending",
+      });
+
+      res.status(201).json(request);
+    } catch (error) {
+      console.error("Error creating redemption request:", error);
+      res.status(500).json({ error: "Failed to create redemption request" });
+    }
+  });
+
+  app.get("/api/users/:userId/redemption-requests", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const requests = await storage.getUserRedemptionRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching redemption requests:", error);
+      res.status(500).json({ error: "Failed to fetch redemption requests" });
+    }
+  });
+
+  app.get("/api/admin/redemption-requests", async (_req, res) => {
+    try {
+      const requests = await storage.getAllRedemptionRequests();
+      const requestsWithUsers = await Promise.all(
+        requests.map(async (req) => {
+          const user = await storage.getUser(req.userId);
+          return { ...req, user };
+        })
+      );
+      res.json(requestsWithUsers);
+    } catch (error) {
+      console.error("Error fetching redemption requests:", error);
+      res.status(500).json({ error: "Failed to fetch redemption requests" });
+    }
+  });
+
+  app.patch("/api/admin/redemption-requests/:id/approve", async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      const redemptionRequest = await storage.getRedemptionRequest(requestId);
+
+      if (!redemptionRequest) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+
+      // Update request status
+      await storage.updateRedemptionRequest(requestId, {
+        status: "approved",
+        approvedAt: new Date(),
+      });
+
+      // Deduct points from user's reward
+      const reward = await storage.getUserReward(redemptionRequest.userId);
+      if (reward) {
+        const newPoints = Math.max(0, reward.points - redemptionRequest.points);
+        await storage.updateReward(reward.id, { points: newPoints });
+
+        // Create transaction record
+        await storage.createTransaction({
+          userId: redemptionRequest.userId,
+          type: "redeemed",
+          amount: redemptionRequest.points,
+          description: `Coin redemption approved: ${redemptionRequest.points} points transferred to ${redemptionRequest.bankName} account ${redemptionRequest.accountNumber}`,
+        });
+      }
+
+      res.json({ success: true, message: "Redemption approved and coins transferred" });
+    } catch (error) {
+      console.error("Error approving redemption:", error);
+      res.status(500).json({ error: "Failed to approve redemption" });
+    }
+  });
+
+  app.patch("/api/admin/redemption-requests/:id/reject", async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      const { rejectionReason } = req.body;
+
+      const redemptionRequest = await storage.getRedemptionRequest(requestId);
+      if (!redemptionRequest) {
+        return res.status(404).json({ error: "Request not found" });
+      }
+
+      await storage.updateRedemptionRequest(requestId, {
+        status: "rejected",
+        rejectionReason: rejectionReason || "Request rejected by admin",
+      });
+
+      res.json({ success: true, message: "Redemption rejected" });
+    } catch (error) {
+      console.error("Error rejecting redemption:", error);
+      res.status(500).json({ error: "Failed to reject redemption" });
     }
   });
 

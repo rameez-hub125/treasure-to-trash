@@ -45,7 +45,7 @@ export default function UserDashboard() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Leaf className="h-8 w-8 text-primary" />
-            <span className="text-xl font-semibold">Zero-to-Hero</span>
+            <span className="text-xl font-semibold">Trash-to-Treasure</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground" data-testid="text-user-name">

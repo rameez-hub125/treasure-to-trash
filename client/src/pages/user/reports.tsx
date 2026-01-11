@@ -49,7 +49,7 @@ export default function MyReports() {
             </Button>
             <div className="flex items-center gap-2">
               <Leaf className="h-8 w-8 text-primary" />
-              <span className="text-xl font-semibold">Zero-to-Hero</span>
+              <span className="text-xl font-semibold">Trash-to-Treasure</span>
             </div>
           </div>
           <Button className="gap-2" onClick={() => setLocation("/user/report")} data-testid="button-new-report">

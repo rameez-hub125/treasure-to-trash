@@ -81,7 +81,7 @@ export default function ReportWaste() {
           </Button>
           <div className="flex items-center gap-2">
             <Leaf className="h-8 w-8 text-primary" />
-            <span className="text-xl font-semibold">Zero-to-Hero</span>
+            <span className="text-xl font-semibold">Trash-to-Treasure</span>
           </div>
         </div>
       </header>
@@ -114,10 +114,8 @@ export default function ReportWaste() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="plastic">Plastic</SelectItem>
-                    <SelectItem value="metal">Metal</SelectItem>
-                    <SelectItem value="paper">Paper</SelectItem>
-                    <SelectItem value="organic">Organic</SelectItem>
+                    <SelectItem value="Foodwaste">Food Waste</SelectItem>
+                    <SelectItem value="Electroicwaste">Electronic Waste</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>

@@ -1,5 +1,5 @@
 import { 
-  users, reports, rewards, transactions, notifications, admins, bins,
+  users, reports, rewards, transactions, notifications, admins, bins, redemptionRequests,
   type User, type InsertUser, 
   type Report, type InsertReport,
   type Reward, type InsertReward,
@@ -7,6 +7,7 @@ import {
   type Notification, type InsertNotification,
   type Admin, type InsertAdmin,
   type Bin, type InsertBin,
+  type RedemptionRequest, type InsertRedemptionRequest,
   type DashboardStats
 } from "@shared/schema";
 import { db } from "./db";
@@ -52,6 +53,13 @@ export interface IStorage {
   createBin(bin: InsertBin): Promise<Bin>;
   updateBin(id: number, data: Partial<Bin>): Promise<Bin | undefined>;
   deleteBin(id: number): Promise<boolean>;
+
+  // Redemption Requests
+  getRedemptionRequest(id: number): Promise<RedemptionRequest | undefined>;
+  getAllRedemptionRequests(): Promise<RedemptionRequest[]>;
+  getUserRedemptionRequests(userId: number): Promise<RedemptionRequest[]>;
+  createRedemptionRequest(request: InsertRedemptionRequest): Promise<RedemptionRequest>;
+  updateRedemptionRequest(id: number, data: Partial<RedemptionRequest>): Promise<RedemptionRequest | undefined>;
   
   // Stats
   getDashboardStats(): Promise<DashboardStats>;
@@ -189,6 +197,30 @@ export class DatabaseStorage implements IStorage {
   async deleteBin(id: number): Promise<boolean> {
     const result = await db.delete(bins).where(eq(bins.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Redemption Requests
+  async getRedemptionRequest(id: number): Promise<RedemptionRequest | undefined> {
+    const [request] = await db.select().from(redemptionRequests).where(eq(redemptionRequests.id, id));
+    return request || undefined;
+  }
+
+  async getAllRedemptionRequests(): Promise<RedemptionRequest[]> {
+    return db.select().from(redemptionRequests).orderBy(desc(redemptionRequests.createdAt));
+  }
+
+  async getUserRedemptionRequests(userId: number): Promise<RedemptionRequest[]> {
+    return db.select().from(redemptionRequests).where(eq(redemptionRequests.userId, userId)).orderBy(desc(redemptionRequests.createdAt));
+  }
+
+  async createRedemptionRequest(insertRequest: InsertRedemptionRequest): Promise<RedemptionRequest> {
+    const [request] = await db.insert(redemptionRequests).values(insertRequest).returning();
+    return request;
+  }
+
+  async updateRedemptionRequest(id: number, data: Partial<RedemptionRequest>): Promise<RedemptionRequest | undefined> {
+    const [request] = await db.update(redemptionRequests).set(data).where(eq(redemptionRequests.id, id)).returning();
+    return request || undefined;
   }
 
   async getDashboardStats(): Promise<DashboardStats> {

@@ -88,6 +88,21 @@ export const bins = pgTable("bins", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Redemption Requests table
+export const redemptionRequests = pgTable("redemption_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  points: integer("points").notNull(),
+  bankName: varchar("bank_name", { length: 255 }),
+  accountNumber: varchar("account_number", { length: 255 }),
+  accountHolder: varchar("account_holder", { length: 255 }),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  reason: text("reason"),
+  rejectionReason: text("rejection_reason"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  approvedAt: timestamp("approved_at"),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertReportSchema = createInsertSchema(reports).omit({ id: true, createdAt: true });
@@ -96,6 +111,7 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, date: true });
 export const insertAdminSchema = createInsertSchema(admins).omit({ id: true, createdAt: true });
 export const insertBinSchema = createInsertSchema(bins).omit({ id: true, createdAt: true });
+export const insertRedemptionRequestSchema = createInsertSchema(redemptionRequests).omit({ id: true, createdAt: true, approvedAt: true });
 
 // Admin login schema
 export const adminLoginSchema = z.object({
@@ -136,6 +152,9 @@ export type AdminLogin = z.infer<typeof adminLoginSchema>;
 
 export type Bin = typeof bins.$inferSelect;
 export type InsertBin = z.infer<typeof insertBinSchema>;
+
+export type RedemptionRequest = typeof redemptionRequests.$inferSelect;
+export type InsertRedemptionRequest = z.infer<typeof insertRedemptionRequestSchema>;
 
 // Dashboard stats type
 export type DashboardStats = {
