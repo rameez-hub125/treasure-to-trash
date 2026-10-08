@@ -1,6 +1,6 @@
 // Reward points calculation engine
 
-export type WasteType = "Foodwaste" | "Electroicwaste" |  "other";
+export type WasteType = "foodwaste" | "electronicwaste" | "electroicwaste" | "food" | "electronic" | "plastic" | "paper" | "glass" | "metal" | "other" | string;
 
 interface PointCalculationInput {
   wasteType: WasteType;
@@ -9,11 +9,20 @@ interface PointCalculationInput {
   submissionCount: number;
 }
 
-// Base points per waste type
-const WASTE_TYPE_MULTIPLIERS: Record<WasteType, number> = {
-  Foodwaste: 10,      // 10 points per kg
-  Electroicwaste: 15,        // 15 points per kg (more valuable)
-  other: 6,         // 6 points per kg
+// Base points per waste type (supports multiple casing and aliases)
+const WASTE_TYPE_MULTIPLIERS: Record<string, number> = {
+  foodwaste: 10,
+  food: 10,
+  organic: 10,
+  electronicwaste: 15,
+  electroicwaste: 15,
+  electronic: 15,
+  "e-waste": 15,
+  plastic: 8,
+  paper: 8,
+  glass: 8,
+  metal: 12,
+  other: 6,
 };
 
 // Frequency bonus: 5% bonus for every 5 reports
@@ -33,7 +42,8 @@ export function calculateRewardPoints(input: PointCalculationInput) {
   const { wasteType, amount, submissionCount } = input;
 
   // Base points = waste type multiplier × amount
-  const baseMultiplier = WASTE_TYPE_MULTIPLIERS[wasteType] || WASTE_TYPE_MULTIPLIERS.other;
+  const normalizedKey = wasteType ? wasteType.toString().toLowerCase().trim() : "other";
+  const baseMultiplier = WASTE_TYPE_MULTIPLIERS[normalizedKey] || WASTE_TYPE_MULTIPLIERS.other;
   const basePoints = Math.round(baseMultiplier * amount);
 
   // Quantity bonus (10% for 50kg+)
